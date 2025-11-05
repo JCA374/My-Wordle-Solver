@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Solver - Smart Word Recommendations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎯 Wordle Solver</h1>
+            <p class="subtitle">Get smart word recommendations based on your guesses</p>
+        </header>
+
+        <!-- Info Bar -->
+        <div class="info-bar">
+            <div class="info-item">
+                <span class="info-label">Words Remaining:</span>
+                <span class="info-value" id="wordCount">Loading...</span>
+            </div>
+            <div class="info-item">
+                <button class="btn btn-secondary" id="resetBtn">🔄 Reset</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Word Grid -->
+            <div class="left-panel">
+                <div class="section">
+                    <h2>Enter Your Guess</h2>
+                    <p class="help-text">Click tiles to change their status: Gray → Yellow → Green</p>
+
+                    <!-- Word Grid (5 rows for 6 guesses) -->
+                    <div class="word-grid" id="wordGrid">
+                        <!-- Rows will be dynamically generated -->
+                    </div>
+
+                    <button class="btn btn-primary" id="analyzeBtn">
+                        ✨ Analyze & Get Recommendations
+                    </button>
+                </div>
+
+                <!-- Controls -->
+                <div class="section">
+                    <h3>Settings</h3>
+                    <div class="setting-item">
+                        <label for="repeatMultiplier">
+                            Repeat Letter Penalty:
+                            <span class="tooltip" title="Lower values penalize words with repeated letters more">ⓘ</span>
+                        </label>
+                        <input
+                            type="range"
+                            id="repeatMultiplier"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value="0.5"
+                        >
+                        <span id="repeatMultiplierValue">0.5</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="excludeOldWords" checked>
+                            Exclude previous Wordle answers
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Best Starting Words -->
+                <div class="section">
+                    <h3>🌟 Best Starting Words</h3>
+                    <div id="startingWords" class="starting-words">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Recommendations -->
+            <div class="right-panel">
+                <div class="section">
+                    <h2>📊 Recommendations</h2>
+                    <div id="recommendations" class="recommendations">
+                        <div class="empty-state">
+                            <p>👆 Enter your guess and click "Analyze" to get word recommendations</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Letter Frequency -->
+                <div class="section">
+                    <h3>📈 Most Common Letters</h3>
+                    <div id="letterFrequency" class="letter-frequency">
+                        <div class="empty-state">
+                            <p>Letter frequency will appear after analysis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Made with ❤️ for Wordle enthusiasts |
+                <a href="https://github.com" target="_blank">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Analyzing...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
