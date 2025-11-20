@@ -198,13 +198,29 @@ def get_top_recommendations(words_list, word_frequency_dict, top_n=20):
     sorted_words = sorted(word_data.items(), key=lambda x: x[1]['frequency'], reverse=True)[:top_n]
     return sorted_words
 
-def find_best_starting_words(word_list, top_n=2):
-    """Find the best starting words with unique letters and no overlap."""
-    letter_frequency = Counter("".join(word_list))
+def find_best_starting_words(word_list, top_n=2, exclude_letters=None):
+    """Find the best starting words with unique letters and no overlap.
+
+    Args:
+        word_list: List of words to search
+        top_n: Number of words to return
+        exclude_letters: Set of letters to exclude (from current word and locked positions)
+    """
+    if exclude_letters is None:
+        exclude_letters = set()
+
+    # Filter out words that contain any excluded letters
+    filtered_list = [word for word in word_list if not any(letter in exclude_letters for letter in word)]
+
+    if not filtered_list:
+        return []
+
+    # Calculate letter frequency only from remaining letters
+    letter_frequency = Counter("".join(filtered_list))
 
     # Calculate scores for words with all unique letters
     word_scores = {}
-    for word in word_list:
+    for word in filtered_list:
         if len(word) == len(set(word)):  # All unique letters
             word_scores[word] = sum(letter_frequency[letter] for letter in word)
 
@@ -440,9 +456,14 @@ def main():
 
                 # Show words with 5 unique letters FIRST
                 st.subheader("🔤 Best Words with 5 Unique Letters")
-                st.caption("These words cover the most new letters from remaining possibilities")
+                st.caption("These words cover the most new letters (excluding letters from your guess and correct positions)")
 
-                unique_letter_words = find_best_starting_words(filtered_words, top_n=5)
+                # Build set of letters to exclude (current word + locked positions)
+                exclude_letters = set(st.session_state.current_word)
+                if st.session_state.locked_positions:
+                    exclude_letters.update(st.session_state.locked_positions.values())
+
+                unique_letter_words = find_best_starting_words(filtered_words, top_n=5, exclude_letters=exclude_letters)
                 if unique_letter_words:
                     for i, (word, score) in enumerate(unique_letter_words, 1):
                         freq = st.session_state.word_frequency_dict.get(word, 0)
