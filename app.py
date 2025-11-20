@@ -262,6 +262,8 @@ def initialize_session_state():
         st.session_state.excluded_positions = {}
     if 'excluded_letters' not in st.session_state:
         st.session_state.excluded_letters = []
+    if 'guessed_words' not in st.session_state:
+        st.session_state.guessed_words = []
     if 'data_loaded' not in st.session_state:
         st.session_state.data_loaded = False
 
@@ -292,6 +294,7 @@ def reset_game():
     st.session_state.locked_positions = {}
     st.session_state.excluded_positions = {}
     st.session_state.excluded_letters = []
+    st.session_state.guessed_words = []
     if st.session_state.get('exclude_old_words', False):
         st.session_state.word_list = [w for w in st.session_state.full_word_list if w not in st.session_state.old_words]
     else:
@@ -340,6 +343,13 @@ def main():
             )
             st.metric("Possible Solutions", len(filtered))
 
+        # Show guessed words history
+        if st.session_state.guessed_words:
+            st.metric("Guesses Made", len(st.session_state.guessed_words))
+            with st.expander("View Guessed Words"):
+                for i, word in enumerate(st.session_state.guessed_words, 1):
+                    st.write(f"**{i}.** {word}")
+
         st.divider()
 
         # Best starting words
@@ -384,6 +394,10 @@ def main():
 
                     # Status buttons for each letter
                     if st.button("🟩 Correct", key=f"lock_{i}", use_container_width=True):
+                        # Add current word to guessed words if not already there
+                        if st.session_state.current_word not in st.session_state.guessed_words:
+                            st.session_state.guessed_words.append(st.session_state.current_word)
+
                         st.session_state.letter_states[i] = "locked"
                         st.session_state.locked_positions[i+1] = letter
                         if i+1 in st.session_state.excluded_positions:
@@ -393,6 +407,10 @@ def main():
                         st.rerun()
 
                     if st.button("🟨 Wrong Position", key=f"wrong_{i}", use_container_width=True):
+                        # Add current word to guessed words if not already there
+                        if st.session_state.current_word not in st.session_state.guessed_words:
+                            st.session_state.guessed_words.append(st.session_state.current_word)
+
                         st.session_state.letter_states[i] = "wrong_place"
                         st.session_state.excluded_positions[i+1] = letter
                         if i+1 in st.session_state.locked_positions:
@@ -402,6 +420,10 @@ def main():
                         st.rerun()
 
                     if st.button("⬛ Not in Word", key=f"exclude_{i}", use_container_width=True):
+                        # Add current word to guessed words if not already there
+                        if st.session_state.current_word not in st.session_state.guessed_words:
+                            st.session_state.guessed_words.append(st.session_state.current_word)
+
                         st.session_state.letter_states[i] = "excluded"
                         if letter not in st.session_state.excluded_letters:
                             st.session_state.excluded_letters.append(letter)
@@ -456,10 +478,16 @@ def main():
 
                 # Show words with 5 unique letters FIRST
                 st.subheader("🔤 Best Words with 5 Unique Letters")
-                st.caption("These words cover the most new letters (excluding letters from your guess and correct positions)")
+                st.caption("These words cover the most new letters (excluding all previously guessed letters)")
 
-                # Build set of letters to exclude (current word + locked positions)
-                exclude_letters = set(st.session_state.current_word)
+                # Build set of letters to exclude (all guessed words + current word + locked positions)
+                exclude_letters = set()
+                # Add letters from all previously guessed words
+                for guessed_word in st.session_state.guessed_words:
+                    exclude_letters.update(guessed_word)
+                # Add letters from current word
+                exclude_letters.update(st.session_state.current_word)
+                # Add locked position letters
                 if st.session_state.locked_positions:
                     exclude_letters.update(st.session_state.locked_positions.values())
 
