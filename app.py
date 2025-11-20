@@ -418,11 +418,20 @@ def main():
                     # Show current state
                     state = st.session_state.letter_states[i]
                     if state == "locked":
-                        st.success("✓ Correct")
+                        st.markdown(
+                            "<div style='background-color: #6aaa64; color: white; padding: 0.5rem; border-radius: 4px; text-align: center; font-weight: 600;'>✓ Correct</div>",
+                            unsafe_allow_html=True
+                        )
                     elif state == "wrong_place":
-                        st.warning("≈ Wrong Position")
+                        st.markdown(
+                            "<div style='background-color: #c9b458; color: white; padding: 0.5rem; border-radius: 4px; text-align: center; font-weight: 600;'>≈ Wrong Position</div>",
+                            unsafe_allow_html=True
+                        )
                     elif state == "excluded":
-                        st.error("✗ Not in Word")
+                        st.markdown(
+                            "<div style='background-color: #787c7e; color: white; padding: 0.5rem; border-radius: 4px; text-align: center; font-weight: 600;'>✗ Not in Word</div>",
+                            unsafe_allow_html=True
+                        )
 
         elif len(word_input) > 0:
             st.warning("⚠️ Please enter exactly 5 letters")
