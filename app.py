@@ -463,7 +463,8 @@ def main():
                 if st.session_state.locked_positions:
                     exclude_letters.update(st.session_state.locked_positions.values())
 
-                unique_letter_words = find_best_starting_words(filtered_words, top_n=5, exclude_letters=exclude_letters)
+                # Use full word list, not filtered_words, to find words with new letters
+                unique_letter_words = find_best_starting_words(st.session_state.word_list, top_n=5, exclude_letters=exclude_letters)
                 if unique_letter_words:
                     for i, (word, score) in enumerate(unique_letter_words, 1):
                         freq = st.session_state.word_frequency_dict.get(word, 0)
