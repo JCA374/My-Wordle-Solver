@@ -380,6 +380,10 @@ def main():
         ).upper()
 
         if len(word_input) == 5:
+            # Reset letter states if word changed
+            if word_input != st.session_state.current_word:
+                st.session_state.letter_states = {i: None for i in range(5)}
+
             st.session_state.current_word = word_input
 
             # Display letter status buttons
@@ -453,6 +457,25 @@ def main():
 
         elif len(word_input) > 0:
             st.warning("⚠️ Please enter exactly 5 letters")
+
+        # Show current constraints in left column for visibility
+        if st.session_state.locked_positions or st.session_state.excluded_positions or st.session_state.excluded_letters:
+            st.divider()
+            st.subheader("📋 Active Constraints")
+
+            if st.session_state.locked_positions:
+                st.write("**🟩 Correct Letters:**")
+                for pos, letter in sorted(st.session_state.locked_positions.items()):
+                    st.write(f"• Position {pos}: **{letter}**")
+
+            if st.session_state.excluded_positions:
+                st.write("**🟨 Wrong Position Letters:**")
+                for pos, letter in sorted(st.session_state.excluded_positions.items()):
+                    st.write(f"• **{letter}** not at position {pos}")
+
+            if st.session_state.excluded_letters:
+                st.write("**⬛ Not in Word:**")
+                st.write(", ".join(sorted(st.session_state.excluded_letters)))
 
     with col2:
         st.header("💡 Recommendations")
@@ -542,29 +565,6 @@ def main():
             else:
                 st.info("👆 Enter a word above and mark each letter's status to get started")
 
-    # Show current constraints
-    if st.session_state.locked_positions or st.session_state.excluded_positions or st.session_state.excluded_letters:
-        st.divider()
-        st.subheader("Current Constraints")
-
-        constraint_cols = st.columns(3)
-
-        with constraint_cols[0]:
-            if st.session_state.locked_positions:
-                st.write("**🟩 Correct Letters:**")
-                for pos, letter in st.session_state.locked_positions.items():
-                    st.write(f"Position {pos}: {letter}")
-
-        with constraint_cols[1]:
-            if st.session_state.excluded_positions:
-                st.write("**🟨 Wrong Position Letters:**")
-                for pos, letter in st.session_state.excluded_positions.items():
-                    st.write(f"Not at position {pos}: {letter}")
-
-        with constraint_cols[2]:
-            if st.session_state.excluded_letters:
-                st.write("**⬛ Excluded Letters:**")
-                st.write(", ".join(st.session_state.excluded_letters))
 
 if __name__ == "__main__":
     main()
