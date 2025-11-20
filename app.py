@@ -182,32 +182,20 @@ def calculate_word_scores_simple(words_list, word_frequency_dict):
 
     return word_scores
 
-def get_top_recommendations(words_list, word_frequency_dict, repeat_multiplier=0.5, top_n=20):
-    """Get top word recommendations with scores."""
+def get_top_recommendations(words_list, word_frequency_dict, top_n=20):
+    """Get top word recommendations sorted by frequency."""
     if not words_list:
         return []
 
-    letter_scores = compute_letter_scores(words_list)
-    word_scores = {}
+    word_data = {}
 
     for word in words_list:
-        # Letter score
-        word_letter_score = sum([letter_scores.get(letter, 0) for letter in word])
-
-        # Apply multiplier for repeated letters
-        multiplier = repeat_multiplier if len(word) > len(set(word)) else 1.0
-        total_score = word_letter_score * multiplier
-
         # Get frequency if available
         freq = word_frequency_dict.get(word, 0)
+        word_data[word] = {'frequency': freq}
 
-        word_scores[word] = {
-            'score': round(total_score, 4),
-            'frequency': freq
-        }
-
-    # Sort by score
-    sorted_words = sorted(word_scores.items(), key=lambda x: x[1]['score'], reverse=True)[:top_n]
+    # Sort by frequency (highest first)
+    sorted_words = sorted(word_data.items(), key=lambda x: x[1]['frequency'], reverse=True)[:top_n]
     return sorted_words
 
 def find_best_starting_words(word_list, top_n=2):
@@ -321,16 +309,6 @@ def main():
                 st.session_state.word_list = [w for w in st.session_state.full_word_list if w not in st.session_state.old_words]
             else:
                 st.session_state.word_list = st.session_state.full_word_list
-
-        # Repeat letter multiplier
-        repeat_multiplier = st.slider(
-            "Repeat Letter Penalty",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.5,
-            step=0.1,
-            help="Lower values penalize words with repeated letters more heavily"
-        )
 
         st.divider()
 
@@ -454,27 +432,44 @@ def main():
             recommendations = get_top_recommendations(
                 filtered_words,
                 st.session_state.word_frequency_dict,
-                repeat_multiplier=repeat_multiplier,
                 top_n=20
             )
 
             if recommendations:
-                st.success(f"Found {len(filtered_words)} possible words. Top 20 recommendations:")
+                st.success(f"Found {len(filtered_words)} possible words. Top 20 recommendations (by frequency):")
 
                 # Display recommendations in a nice format
                 for i, (word, data) in enumerate(recommendations, 1):
                     freq = data['frequency']
-                    score = data['score']
                     freq_str = f"{freq:,}" if freq > 0 else "N/A"
 
                     st.markdown(
                         f"<div class='word-result'>"
                         f"<strong>{i}. {word}</strong> - "
-                        f"Score: {score:.4f} | "
                         f"Frequency: {freq_str}"
                         f"</div>",
                         unsafe_allow_html=True
                     )
+
+                # Show words with 5 unique letters
+                st.divider()
+                st.subheader("🔤 Best Words with 5 Unique Letters")
+                st.caption("These words cover the most new letters from remaining possibilities")
+
+                unique_letter_words = find_best_starting_words(filtered_words, top_n=5)
+                if unique_letter_words:
+                    for i, (word, score) in enumerate(unique_letter_words, 1):
+                        freq = st.session_state.word_frequency_dict.get(word, 0)
+                        freq_str = f"{freq:,}" if freq > 0 else "N/A"
+                        st.markdown(
+                            f"<div class='word-result'>"
+                            f"<strong>{i}. {word}</strong> - "
+                            f"Frequency: {freq_str}"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                else:
+                    st.info("No words with 5 unique letters available")
 
                 # Show letter frequency
                 st.divider()
