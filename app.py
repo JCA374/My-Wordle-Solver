@@ -436,23 +436,9 @@ def main():
             )
 
             if recommendations:
-                st.success(f"Found {len(filtered_words)} possible words. Top 20 recommendations (by frequency):")
+                st.success(f"Found {len(filtered_words)} possible words")
 
-                # Display recommendations in a nice format
-                for i, (word, data) in enumerate(recommendations, 1):
-                    freq = data['frequency']
-                    freq_str = f"{freq:,}" if freq > 0 else "N/A"
-
-                    st.markdown(
-                        f"<div class='word-result'>"
-                        f"<strong>{i}. {word}</strong> - "
-                        f"Frequency: {freq_str}"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-
-                # Show words with 5 unique letters
-                st.divider()
+                # Show words with 5 unique letters FIRST
                 st.subheader("🔤 Best Words with 5 Unique Letters")
                 st.caption("These words cover the most new letters from remaining possibilities")
 
@@ -470,6 +456,24 @@ def main():
                         )
                 else:
                     st.info("No words with 5 unique letters available")
+
+                # Then show top 20 by frequency
+                st.divider()
+                st.subheader("📊 Top 20 Most Common Words")
+                st.caption("Ranked by English word frequency")
+
+                # Display recommendations in a nice format
+                for i, (word, data) in enumerate(recommendations, 1):
+                    freq = data['frequency']
+                    freq_str = f"{freq:,}" if freq > 0 else "N/A"
+
+                    st.markdown(
+                        f"<div class='word-result'>"
+                        f"<strong>{i}. {word}</strong> - "
+                        f"Frequency: {freq_str}"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
 
                 # Show letter frequency
                 st.divider()
