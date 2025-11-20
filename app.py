@@ -34,8 +34,10 @@ st.markdown("""
     .word-result {
         padding: 0.5rem;
         margin: 0.25rem 0;
-        background-color: #f0f2f6;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
         border-radius: 4px;
+        color: #1f1f1f;
     }
     </style>
 """, unsafe_allow_html=True)
