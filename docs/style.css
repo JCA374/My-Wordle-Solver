@@ -154,6 +154,19 @@ a { color: inherit; }
 .tile.editable:hover { transform: scale(1.05); }
 .tile.editable:active { transform: scale(0.95); }
 
+.enter {
+  width: var(--board-width);
+  max-width: 100%;
+  padding: 0.45rem 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--green);
+  color: var(--on-color);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.enter:hover { filter: brightness(1.08); }
+
 .message {
   min-height: 1.4em;
   margin: 0;
@@ -187,8 +200,10 @@ a { color: inherit; }
 .key.s-y { background: var(--yellow); }
 .key.s-b { background: var(--gray); }
 
+.enter { display: none; }
 @media (hover: hover) and (pointer: fine) {
   .keyboard { display: none; }
+  .enter { display: block; }
 }
 
 /* ------------------------------------------------------------ letters + footer */
@@ -260,6 +275,9 @@ a { color: inherit; }
 .word .d { color: var(--muted); font-size: 0.72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .word.could-win { border-color: var(--green); }
+li:has(> .word.partner) { grid-column: span 2; }
+.word.partner { border-color: var(--focus); border-width: 2px; }
+.word.partner .d { color: var(--focus); font-weight: 600; }
 .word.could-win .w::after { content: " ★"; color: var(--green); font-family: system-ui, sans-serif; }
 
 .empty { color: var(--muted); grid-column: 1 / -1; font-size: 0.9rem; }

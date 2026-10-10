@@ -38,30 +38,6 @@ export function letterFrequency(words) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 }
 
-/**
- * Words with 5 distinct letters that avoid `excludeLetters` and share no letters
- * with each other, ranked by how common their letters are among the allowed words.
- * Returns [word, score] pairs.
- */
-export function bestExploreWords(words, excludeLetters = new Set(), n = 5) {
-  const allowed = words.filter((w) => ![...w].some((c) => excludeLetters.has(c)));
-  const counts = Object.fromEntries(letterFrequency(allowed));
-  const ranked = allowed
-    .filter((w) => new Set(w).size === WORD_LENGTH)
-    .map((w) => [w, [...w].reduce((sum, c) => sum + counts[c], 0)])
-    .sort((a, b) => b[1] - a[1]);
-
-  const picked = [];
-  const used = new Set();
-  for (const [w, s] of ranked) {
-    if ([...w].some((c) => used.has(c))) continue;
-    picked.push([w, s]);
-    for (const c of w) used.add(c);
-    if (picked.length >= n) break;
-  }
-  return picked;
-}
-
 /** Best known status per letter across all guesses: 'g' beats 'y' beats 'b'. */
 export function letterStatuses(guesses) {
   const rank = { b: 0, y: 1, g: 2 };

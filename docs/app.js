@@ -1,12 +1,11 @@
 import {
-  WORD_LENGTH, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses,
-  bestSplitters, bestPairs,
+  WORD_LENGTH, filterCandidates, topByFrequency, letterFrequency, letterStatuses, bestSplitters, bestPairs,
 } from './solver.js';
 
 const STORAGE_KEY = 'wordle-solver-state-v1';
 const MIN_ROWS = 6;
 const NEXT = { b: 'y', y: 'g', g: 'b' };
-const SPLIT_TARGETS = 20;   // how many likely answers the splitter tries to tell apart
+const SPLIT_TARGETS = 20;   // how many likely answers "Test new letters" tries to tell apart
 const COMMON_WORDS = 5000;  // suggested start pairs come from the most common words
 const LETTER_BASE = 3000;   // letter counts for start pairs use this many most likely answers
 const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '+ZXCVBNM-'];
@@ -16,12 +15,14 @@ const $ = (id) => document.getElementById(id);
 let allWords = [];          // every valid word, most common first
 let freq = new Map();       // word -> frequency
 let pastAnswers = new Set();
+let startPairs = [];        // the Best start pairs currently shown
 
 let state = {
   guesses: [],              // [{ word, pattern }]
   input: '',
   pattern: 'bbbbb',
   excludePast: false,
+  partner: null,            // other half of the start pair, after guessing one of its words
 };
 
 // ---------------------------------------------------------------- storage
@@ -75,10 +76,21 @@ function cycleTile(i) {
   update();
 }
 
+/** Fix a colour in a guess that was already entered. */
+function cycleGuessTile(row, i) {
+  const g = state.guesses[row];
+  g.pattern = g.pattern.slice(0, i) + NEXT[g.pattern[i]] + g.pattern.slice(i + 1);
+  update();
+}
+
 function submit() {
   if (state.input.length < WORD_LENGTH) {
     flash('Enter all five letters first.');
     return;
+  }
+  if (!state.guesses.length) {
+    const pair = startPairs.find((p) => p.words.includes(state.input));
+    state.partner = pair ? pair.words.find((w) => w !== state.input) : null;
   }
   state.guesses.push({ word: state.input, pattern: state.pattern });
   state.input = '';
@@ -97,7 +109,7 @@ function undo() {
 }
 
 function reset() {
-  state = { ...state, guesses: [], input: '', pattern: 'bbbbb' };
+  state = { ...state, guesses: [], input: '', pattern: 'bbbbb', partner: null };
   update();
 }
 
@@ -110,16 +122,17 @@ function flash(text) {
 
 // ---------------------------------------------------------------- rendering
 
-function tile(letter, status, { current = false, index = -1 } = {}) {
-  const el = document.createElement(current && letter ? 'button' : 'div');
+function tile(letter, status, onClick) {
+  const el = document.createElement(letter && onClick ? 'button' : 'div');
   el.className = 'tile';
   el.textContent = letter || '';
   if (letter) el.classList.add('filled', `s-${status}`);
-  if (current && letter) {
+  if (letter && onClick) {
     el.type = 'button';
     el.classList.add('editable');
     el.setAttribute('aria-label', `${letter}, ${statusName(status)}. Tap to change.`);
-    el.addEventListener('click', () => cycleTile(index));
+    el.title = 'Click to change the colour';
+    el.addEventListener('click', onClick);
   }
   return el;
 }
@@ -131,16 +144,16 @@ function statusName(s) {
 function renderBoard(solved) {
   const board = $('board');
   board.replaceChildren();
-  const rows = [...state.guesses.map((g) => ({ ...g, current: false }))];
-  if (!solved) rows.push({ word: state.input, pattern: state.pattern, current: true });
-  while (rows.length < MIN_ROWS) rows.push({ word: '', pattern: 'bbbbb', current: false });
+  const rows = state.guesses.map((g, r) => ({ ...g, onClick: (i) => () => cycleGuessTile(r, i) }));
+  if (!solved) rows.push({ word: state.input, pattern: state.pattern, current: true, onClick: (i) => () => cycleTile(i) });
+  while (rows.length < MIN_ROWS) rows.push({ word: '', pattern: 'bbbbb' });
 
   for (const row of rows) {
     const el = document.createElement('div');
     el.className = 'row' + (row.current ? ' current' : '');
     el.setAttribute('role', 'row');
     for (let i = 0; i < WORD_LENGTH; i++) {
-      el.append(tile(row.word[i], row.pattern[i], { current: row.current, index: i }));
+      el.append(tile(row.word[i], row.pattern[i], row.onClick?.(i)));
     }
     board.append(el);
   }
@@ -228,10 +241,10 @@ function renderResults(candidates, solved, onlyPastMatch) {
   $('count').textContent = candidates.length.toLocaleString('en');
   $('count-label').textContent = 'possible';
 
-  renderExplore(candidates, solved);
+  renderStart(candidates);
+  renderNext(candidates, solved);
 
   const likely = topByFrequency(candidates, freq, 20);
-  renderSplitters(candidates, solved);
   $('likely').replaceChildren(...likely.map((w) => wordItem(w)));
   if (!likely.length) $('likely').replaceChildren(emptyItem('No words match.'));
 
@@ -257,57 +270,42 @@ function renderResults(candidates, solved, onlyPastMatch) {
   $('message').classList.toggle('is-hint', hint);
 }
 
-// Two words that test ten untried letters; falls back to single words when no pair fits.
-function renderExplore(candidates, solved) {
-  const tried = new Set(state.guesses.flatMap((g) => [...g.word]));
-  const first = !state.guesses.length;
-  const weights = letterWeights(candidates);
-  let pairs = bestPairs(allWords.slice(0, COMMON_WORDS), weights, tried, 3);
-  if (!pairs.length) pairs = bestPairs(allWords, weights, tried, 3);
-
-  const list = $('explore');
-  const sub = $('explore-sub');
-  list.classList.toggle('pair-list', pairs.length > 0);
-  if (pairs.length) {
-    $('explore-title').textContent = first ? 'Best start' : 'Test new letters';
-    sub.textContent = first ? '2 words, 10 letters' : '2 words, 10 untried letters';
-    sub.title = (first
-      ? 'Two common words with no shared letters that together test the 10 letters found in the most likely answers.'
-      : 'Probably not the answer, but together they test 10 letters you haven\'t tried, picked by how many possible answers contain them.')
-      + ' Click a word to use it.';
-    list.replaceChildren(...pairs.map(pairItem));
-  } else {
-    const words = bestExploreWords(allWords, tried, 5);
-    $('explore-title').textContent = 'Test new letters';
-    sub.textContent = '5 untried letters each';
-    sub.title = 'Probably not the answer, but each tests five letters you haven\'t tried yet.';
-    list.replaceChildren(...words.map(([w]) => wordItem(w)));
-  }
-  $('explore-panel').hidden = solved || !list.children.length;
+/** Before the first guess: pairs of words that together test the 10 most useful letters. */
+function renderStart(candidates) {
+  const panel = $('start-panel');
+  panel.hidden = state.guesses.length > 0;
+  if (panel.hidden) return;
+  startPairs = bestPairs(allWords.slice(0, COMMON_WORDS), letterWeights(candidates), new Set(), 3);
+  $('start').replaceChildren(...startPairs.map(pairItem));
 }
 
 // Scoring every valid guess against the targets takes a moment, so cache it per set of clues.
 let splitCache = { key: null, value: [] };
 
-function renderSplitters(candidates, solved) {
-  const panel = $('split-panel');
+/** After a guess: the other start word, then the guesses that rule out the most likely answers. */
+function renderNext(candidates, solved) {
+  const panel = $('next-panel');
   panel.hidden = solved || !state.guesses.length || candidates.length < 3;
   if (panel.hidden) return;
 
   const targets = topByFrequency(candidates, freq, SPLIT_TARGETS);
   const key = targets.join();
-  if (splitCache.key !== key) splitCache = { key, value: bestSplitters(allWords, targets, 5) };
+  if (splitCache.key !== key) splitCache = { key, value: bestSplitters(allWords, targets, 6) };
 
-  const n = targets.length;
-  const sub = $('split-sub');
-  sub.textContent = `best splits of the top ${n}`;
-  sub.title = `Ignores what you already know and picks guesses that best tell apart the ${n} most likely answers.`
-    + ' "solves it" means the colours would pin down the answer. ★ could also be the answer.';
-  $('split').replaceChildren(...splitCache.value.map((s) => {
+  const items = [];
+  const partner = state.guesses.length === 1 ? state.partner : null;
+  if (partner) {
+    const li = wordItem(partner, '2nd start word');
+    li.querySelector('.word').classList.add('partner');
+    items.push(li);
+  }
+  for (const s of splitCache.value) {
+    if (s.word === partner || items.length >= (partner ? 5 : 6)) continue;   // the partner takes two cells
     const li = wordItem(s.word, s.worst === 1 ? 'solves it' : '');
     if (s.isTarget) li.querySelector('.word').classList.add('could-win');
-    return li;
-  }));
+    items.push(li);
+  }
+  $('next').replaceChildren(...items);
 }
 
 function emptyItem(text) {
@@ -327,6 +325,7 @@ function render() {
     && filterCandidates(allWords, state.guesses).length > 0;
   renderResults(candidates, solved, onlyPastMatch);
   $('undo').disabled = !state.guesses.length && !state.input;
+  $('enter').hidden = solved;
   $('exclude-past').checked = state.excludePast;
 }
 
@@ -387,6 +386,7 @@ async function init() {
   }
 
   document.addEventListener('keydown', onKeyDown);
+  $('enter').addEventListener('click', submit);
   $('undo').addEventListener('click', undo);
   $('reset').addEventListener('click', reset);
   $('exclude-past').addEventListener('change', (e) => {
