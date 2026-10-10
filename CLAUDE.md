@@ -26,5 +26,6 @@ A static site with no build step, served by GitHub Pages from `main` → `/docs`
   - `update()` saves the state and re-renders everything; rendering is cheap enough to redo in full.
 - `docs/data/words.json` is `[[WORD, frequency], ...]`, most common first. `past_answers.json` is `[WORD, ...]`. Both are generated, so edit `data/` and rerun the build script instead of editing them by hand.
 - Keep every path in the site relative: it is served under `/My-Wordle-Solver/`.
+- GitHub Pages caches files for 10 minutes, so a browser can end up with a new `index.html` but an old `app.js`, which leaves the page blank. Whenever `index.html`, `app.js`, `solver.js` or `style.css` changes, bump the `?v=N` on the `style.css` and `app.js` links in `index.html` and on the `solver.js` import in `app.js`.
 
 The old Python/Streamlit app and the notebooks were removed. Git history has them.

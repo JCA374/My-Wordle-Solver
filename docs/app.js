@@ -1,6 +1,6 @@
 import {
   WORD_LENGTH, filterCandidates, topByFrequency, letterFrequency, letterStatuses, bestSplitters, bestPairs,
-} from './solver.js';
+} from './solver.js?v=7';
 
 const STORAGE_KEY = 'wordle-solver-state-v1';
 const MIN_ROWS = 6;
