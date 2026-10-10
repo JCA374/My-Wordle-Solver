@@ -299,15 +299,12 @@ function renderSplitters(candidates, solved) {
   if (splitCache.key !== key) splitCache = { key, value: bestSplitters(allWords, targets, 5) };
 
   const n = targets.length;
-  const example = splitCache.value[0];
   const sub = $('split-sub');
   sub.textContent = `best splits of the top ${n}`;
   sub.title = `Ignores what you already know and picks guesses that best tell apart the ${n} most likely answers.`
-    + (example ? ` "${example.groups}/${n}" means those ${n} words give ${example.groups} different colour results.` : '')
-    + ' ★ could also be the answer.';
+    + ' "solves it" means the colours would pin down the answer. ★ could also be the answer.';
   $('split').replaceChildren(...splitCache.value.map((s) => {
-    const detail = s.worst === 1 ? 'solves it' : `${s.groups}/${n}`;
-    const li = wordItem(s.word, detail);
+    const li = wordItem(s.word, s.worst === 1 ? 'solves it' : '');
     if (s.isTarget) li.querySelector('.word').classList.add('could-win');
     return li;
   }));
