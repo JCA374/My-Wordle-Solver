@@ -18,6 +18,7 @@ A static site with no build step, served by GitHub Pages from `main` → `/docs`
 - `docs/solver.js`: pure logic with no DOM code, so Node can test it.
   - `score(guess, answer)` returns Wordle feedback as a 5-char pattern (`g`/`y`/`b`) and handles duplicate letters.
   - `filterCandidates(words, guesses)` keeps the words where `score(g.word, w) === g.pattern` for every guess. This is the only filter: don't add per-position constraint dicts, which is the bug the old Streamlit app had.
+  - `bestSplitters(guessWords, targets)` scores every valid guess against the top 20 likely answers and ranks guesses by how evenly they split them. It uses the integer `patternId` fast path, which must stay in sync with `score` (a test checks this). `app.js` caches the result per set of targets.
   - Ranking helpers: `topByFrequency`, `bestExploreWords` (5 distinct untried letters with no overlap between picks), `letterFrequency`, `letterStatuses`.
 - `docs/app.js`: UI and state.
   - State is `{ guesses: [{word, pattern}], input, pattern, excludePast }`, kept in `localStorage`.

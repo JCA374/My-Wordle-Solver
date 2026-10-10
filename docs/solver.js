@@ -74,3 +74,69 @@ export function letterStatuses(guesses) {
   }
   return status;
 }
+
+/**
+ * Guesses (from any valid word, ignoring known letters) that best tell apart `targets`.
+ * Each guess splits the targets into groups by the colours it would show; fewer and
+ * smaller groups are better. Ranked by expected group size (sum of squared sizes),
+ * then preferring guesses that could themselves be the answer, then `guessWords` order.
+ * Returns [{ word, groups, worst, isTarget }].
+ */
+export function bestSplitters(guessWords, targets, n = 5) {
+  const targetSet = new Set(targets);
+  const targetCodes = targets.map(toCodes);
+  const counts = new Uint16Array(243);   // 3^5 possible colour patterns
+  const ids = new Uint8Array(targets.length);
+  const results = [];
+  for (const word of guessWords) {
+    const g = toCodes(word);
+    for (let j = 0; j < targetCodes.length; j++) counts[ids[j] = patternId(g, targetCodes[j])]++;
+    let groups = 0, worst = 0, sumSq = 0;
+    for (let j = 0; j < ids.length; j++) {
+      const c = counts[ids[j]];
+      if (!c) continue;            // group already counted
+      groups++;
+      sumSq += c * c;
+      if (c > worst) worst = c;
+      counts[ids[j]] = 0;
+    }
+    results.push({ word, groups, worst, sumSq, isTarget: targetSet.has(word) });
+  }
+  results.sort((a, b) => a.sumSq - b.sumSq || b.isTarget - a.isTarget);
+  return results.slice(0, n).map(({ word, groups, worst, isTarget }) => ({ word, groups, worst, isTarget }));
+}
+
+// Fast path for bestSplitters: letters as 0-25 codes, pattern as a base-3 number.
+// Must agree with score(); the tests check that.
+const letterCounts = new Uint8Array(26);
+
+const codeCache = new Map();
+
+function toCodes(word) {
+  let codes = codeCache.get(word);
+  if (!codes) {
+    codes = Uint8Array.from(word, (c) => c.charCodeAt(0) - 65);
+    codeCache.set(word, codes);
+  }
+  return codes;
+}
+
+export function patternId(guess, answer) {
+  let green = 0;
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (guess[i] === answer[i]) green |= 1 << i;
+    else letterCounts[answer[i]]++;
+  }
+  // Digit i (base 3) is position i: 0 gray, 1 yellow, 2 green.
+  // Yellows are assigned left to right, matching score().
+  let id = 0;
+  for (let i = 0, place = 1; i < WORD_LENGTH; i++, place *= 3) {
+    if (green & (1 << i)) id += 2 * place;
+    else if (letterCounts[guess[i]] > 0) {
+      letterCounts[guess[i]]--;
+      id += place;
+    }
+  }
+  for (let i = 0; i < WORD_LENGTH; i++) letterCounts[answer[i]] = 0;   // cheaper than fill()
+  return id;
+}

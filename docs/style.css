@@ -222,3 +222,6 @@ a { color: inherit; }
   font-size: 0.85rem;
   text-align: center;
 }
+
+.word.could-win { border-color: var(--green); }
+.word.could-win .w::after { content: " ★"; color: var(--green); font-family: system-ui, sans-serif; }
