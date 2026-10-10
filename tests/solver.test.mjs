@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  score, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses, bestSplitters,
+  score, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses, bestSplitters, bestPairs,
 } from '../docs/solver.js';
 
 test('score: basic patterns', () => {
@@ -107,4 +107,15 @@ test('patternId agrees with score on many word pairs', async () => {
   for (const g of sample) for (const a of sample) {
     assert.equal(patternId(codes(g), codes(a)), toId(score(g, a)), `${g} vs ${a}`);
   }
+});
+
+test('bestPairs finds two words with ten different, high-weight letters', () => {
+  const weights = { A: 9, B: 8, C: 7, D: 6, E: 5, F: 4, G: 3, H: 2, I: 1, J: 1 };
+  const words = ['ABCDE', 'FGHIJ', 'ABCDF', 'EGHIJ', 'AACDE', 'KLMNO'];
+  const [best, ...rest] = bestPairs(words, weights, new Set(), 3);
+  assert.equal(new Set(best.letters).size, 10);
+  assert.deepEqual(best.words, ['ABCDE', 'FGHIJ']);   // ties go to the more common pair
+  assert.deepEqual(rest, []);   // ABCDF+EGHIJ tests the same letters, so it is dropped
+  assert.ok(!bestPairs(words, weights, new Set('A')).some((p) => p.letters.includes('A')));
+  assert.deepEqual(bestPairs(['ABCDE', 'ABFGH'], weights), []);
 });
