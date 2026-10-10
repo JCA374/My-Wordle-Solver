@@ -25,7 +25,7 @@ The layout is made to sit in half a laptop screen next to Wordle (it fits about 
 - **Common letters left** among the remaining words.
 - **Hide past**: optionally hide words that have already been answers.
 
-The **How it works** tab explains the logic in plain words and credits the word lists.
+The **How it works** tab walks through an example game with screenshots and pictures, and credits the word lists.
 
 The filter uses exact Wordle scoring, so repeated letters are handled correctly. For example, if one E is yellow and the other is gray, the answer has exactly one E.
 
@@ -57,6 +57,9 @@ python3 scripts/build_data.py
 
 # Also fetch the latest past answers from rockpapershotgun.com
 python3 scripts/build_data.py --refresh-past-answers
+
+# Retake the screenshots on the How it works tab (needs Playwright)
+python3 scripts/screenshots.py
 ```
 
 ## Deploying

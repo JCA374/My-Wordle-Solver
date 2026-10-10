@@ -1,6 +1,6 @@
 import {
   WORD_LENGTH, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses,
-  bestSplitters, bestPairs,
+  bestSplitters, bestPairs, score,
 } from './solver.js';
 
 const STORAGE_KEY = 'wordle-solver-state-v1';
@@ -349,6 +349,16 @@ function showTab() {
   if (how) $('how').scrollTop = 0;
 }
 
+/** "Load this example" buttons on the How it works tab. */
+function loadExample(btn) {
+  const answer = btn.dataset.answer;
+  state.guesses = btn.dataset.example.split(' ').map((word) => ({ word, pattern: score(word, answer) }));
+  state.input = '';
+  state.pattern = 'bbbbb';
+  update();
+  location.hash = '';
+}
+
 function onKeyDown(e) {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (!$('how').hidden) return;
@@ -387,6 +397,14 @@ async function init() {
   }
 
   document.addEventListener('keydown', onKeyDown);
+  for (const btn of document.querySelectorAll('[data-example]')) btn.addEventListener('click', () => loadExample(btn));
+  // Jump to a step without changing the #how hash, which picks the tab.
+  for (const a of document.querySelectorAll('.step-nav a')) {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+  }
   $('undo').addEventListener('click', undo);
   $('reset').addEventListener('click', reset);
   $('exclude-past').addEventListener('change', (e) => {

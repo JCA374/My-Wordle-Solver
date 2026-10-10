@@ -64,45 +64,138 @@
 
   <article id="how" class="how" hidden>
     <div class="how-inner">
-      <h2>How it works</h2>
-      <p>Everything runs in your browser. The solver uses three ideas.</p>
+      <header class="how-hero">
+        <p class="eyebrow">How it works</p>
+        <h2>Three simple ideas, one example</h2>
+        <p class="lede">You tell the solver what Wordle showed you. It keeps only the words that still fit,
+          puts the common ones first, and suggests the guess that teaches you the most.
+          Let's follow one game where the answer is <b class="ans">BUDDY</b>.</p>
+        <ol class="step-nav">
+          <li><a href="#how-1"><span>1</span> Keep what fits</a></li>
+          <li><a href="#how-2"><span>2</span> Common words first</a></li>
+          <li><a href="#how-3"><span>3</span> Best start</a></li>
+          <li><a href="#how-4"><span>4</span> Narrow it down</a></li>
+        </ol>
+        <figure class="shot hero-shot">
+          <picture><source srcset="img/solver-dark.png" media="(prefers-color-scheme: dark)"><img src="img/solver-light.png" alt="The solver after guessing DEALS and MUDDY: 7 words possible, with suggestions on the right" loading="lazy" class=""></picture>
+          <figcaption>The solver after two guesses: type a word, click the tiles until they match Wordle's colours, press Enter.</figcaption>
+        </figure>
+      </header>
 
-      <h3>1. Keep only the words that fit</h3>
-      <p>For every guess you enter, the solver asks each word in the list:
-        <em>"If this were the answer, would my guess have shown exactly these colours?"</em>
-        Only words that answer yes for every guess are kept. That is the <strong>possible</strong> count.</p>
-      <p>This uses Wordle's own colouring rules, so double letters work: guess <b>SPEED</b> with one
-        yellow E and one gray E and the answer has exactly one E.</p>
+      <section class="step" id="how-1">
+        <h3><span class="num">1</span> Keep only the words that fit</h3>
+        <div class="step-grid">
+          <div class="step-text">
+            <p>Our first guess is <b>DEALS</b> and Wordle shows:</p>
+            <p class="center"><span class="mt-row big" aria-label="DEALS"><span class="mt s-y">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-b">L</span><span class="mt s-b">S</span></span></p>
+            <p>The solver then asks every one of the 14,854 allowed words:
+              <em>"if you were the answer, would DEALS have shown exactly these colours?"</em></p>
+            <p>Only words that answer yes are kept. Here that leaves <strong>186</strong> words.</p>
+          </div>
+          <div class="visual">
+            <p class="visual-title">DEALS would show…</p>
+            <ul class="check-list"><li class="ok"><span class="cw">BUDDY</span><span class="mt-row" aria-label="DEALS"><span class="mt s-y">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-b">L</span><span class="mt s-b">S</span></span><span class="verdict">✓ keep</span></li><li class="ok"><span class="cw">ROUND</span><span class="mt-row" aria-label="DEALS"><span class="mt s-y">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-b">L</span><span class="mt s-b">S</span></span><span class="verdict">✓ keep</span></li><li class="ok"><span class="cw">MOODY</span><span class="mt-row" aria-label="DEALS"><span class="mt s-y">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-b">L</span><span class="mt s-b">S</span></span><span class="verdict">✓ keep</span></li><li class="no"><span class="cw">DOING</span><span class="mt-row" aria-label="DEALS"><span class="mt s-g">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-b">L</span><span class="mt s-b">S</span></span><span class="verdict">✗ D would be green</span></li><li class="no"><span class="cw">SOLID</span><span class="mt-row" aria-label="DEALS"><span class="mt s-y">D</span><span class="mt s-b">E</span><span class="mt s-b">A</span><span class="mt s-y">L</span><span class="mt s-y">S</span></span><span class="verdict">✗ S and L would light up</span></li><li class="no"><span class="cw">DEALT</span><span class="mt-row" aria-label="DEALS"><span class="mt s-g">D</span><span class="mt s-g">E</span><span class="mt s-g">A</span><span class="mt s-g">L</span><span class="mt s-b">S</span></span><span class="verdict">✗ four greens</span></li></ul>
+          </div>
+        </div>
+        <aside class="tip">
+          <span class="tip-icon" aria-hidden="true">💡</span>
+          <p><strong>Double letters just work.</strong> It uses Wordle's own colouring rules: guessing
+            <span class="mt-row" aria-label="SPEED"><span class="mt s-b">S</span><span class="mt s-b">P</span><span class="mt s-y">E</span><span class="mt s-b">E</span><span class="mt s-y">D</span></span> when the answer is ABIDE shows one yellow E and one gray E,
+            which means the answer has <em>exactly one</em> E.</p>
+        </aside>
+      </section>
 
-      <h3>2. Put the common words first</h3>
-      <p>Wordle answers are everyday words, but the list of allowed guesses has almost 15,000 words,
-        most of them obscure. So <strong>Likely answers</strong> sorts the possible words by how often
-        they appear in English text. The top of the list is usually the answer.</p>
-      <p><strong>Hide past</strong> removes words that have already been the answer.</p>
+      <section class="step" id="how-2">
+        <h3><span class="num">2</span> Put the common words first</h3>
+        <div class="step-grid">
+          <div class="step-text">
+            <p>Next we guess <b>MUDDY</b>: <span class="mt-row" aria-label="MUDDY"><span class="mt s-b">M</span><span class="mt s-g">U</span><span class="mt s-g">D</span><span class="mt s-g">D</span><span class="mt s-g">Y</span></span>. Now only <strong>7</strong> words fit.</p>
+            <p>Wordle answers are everyday words, but most allowed words are obscure.
+              So <strong>Likely answers</strong> sorts them by how often each word appears in English text
+              on the web.</p>
+            <p>BUDDY is about <strong>61×</strong> more common than the next one, so it goes to the top.</p>
+            <p class="small">Tick <strong>Hide past</strong> to also drop words that have already been a Wordle answer.</p>
+          </div>
+          <div class="visual">
+            <p class="visual-title">How often each word is used</p>
+            <ol class="bars"><li><span class="bl">BUDDY</span><span class="bt"><span class="bf" style="width:100.0%"></span></span><span class="bv">23.6M</span></li><li><span class="bl">RUDDY</span><span class="bt"><span class="bf" style="width:1.6%"></span></span><span class="bv">388K</span></li><li><span class="bl">CUDDY</span><span class="bt"><span class="bf" style="width:0.9%"></span></span><span class="bv">218K</span></li><li><span class="bl">FUDDY</span><span class="bt"><span class="bf" style="width:0.6%"></span></span><span class="bv">46K</span></li><li><span class="bl">PUDDY</span><span class="bt"><span class="bf" style="width:0.6%"></span></span><span class="bv">44K</span></li><li><span class="bl">NUDDY</span><span class="bt"><span class="bf" style="width:0.6%"></span></span><span class="bv">15K</span></li><li><span class="bl">WUDDY</span><span class="bt"><span class="bf" style="width:0.6%"></span></span><span class="bv">–</span></li></ol>
+          </div>
+        </div>
+      </section>
 
-      <h3>3. Pick guesses that teach you the most</h3>
-      <p><strong>Best start.</strong> Count how many common words (minus past answers) contain each letter.
-        The ten most frequent letters are roughly S E A R I O L T N D. The solver looks for two
-        real words with no letter in common that cover as many of those letters as possible, such as
-        <b>DEALS</b> + <b>INTRO</b>. Two guesses then test ten different letters.</p>
-      <p>After your first guess it does the same with letters you <em>haven't</em> tried yet, counted
-        over the words that are still possible.</p>
-      <p><strong>Narrow it down.</strong> Sometimes you know four letters but many words still fit:
-        BUDDY, MUDDY, CUDDY, … Guessing them one by one can lose the game. Instead the solver takes
-        the 20 most likely answers and tries every allowed word as a guess, even ones that can't be
-        the answer. Each guess splits those 20 words into groups by the colours they would show.
-        The best guess leaves many small groups, so whatever colours you get, few words remain.
-        A ★ means the guess could also be the answer.</p>
-      <p><strong>Common letters left</strong> shows which letters appear most in the words still possible.</p>
+      <section class="step" id="how-3">
+        <h3><span class="num">3</span> Best start: two words, ten letters</h3>
+        <div class="step-grid">
+          <div class="step-text">
+            <p>Before you have any clues, the best move is to test the most common letters.</p>
+            <p>The solver counts how many of the most common words (minus past answers) contain each letter.
+              The top ten are <strong class="letters-inline">S E A R I O L T N D</strong>.</p>
+            <p>Then it looks for two real words with no letter in common that cover as many of them as possible:</p>
+            <p class="center pair-demo"><span class="mt-row big" aria-label="DEALS"><span class="mt s-n">D</span><span class="mt s-n">E</span><span class="mt s-n">A</span><span class="mt s-n">L</span><span class="mt s-n">S</span></span><span class="plus">+</span><span class="mt-row big" aria-label="INTRO"><span class="mt s-n">I</span><span class="mt s-n">N</span><span class="mt s-n">T</span><span class="mt s-n">R</span><span class="mt s-n">O</span></span></p>
+            <p>After your first guess it does the same with the letters you <em>haven't</em> tried yet
+              (shown as <strong>Test new letters</strong>).</p>
+          </div>
+          <div class="visual">
+            <p class="visual-title">Words containing each letter</p>
+            <ol class="letter-bars" aria-label="Letter frequency"><li class="top" title="S: in 975 words"><span class="lb" style="height:100.0%"></span><span class="lc">S</span></li><li class="top" title="E: in 840 words"><span class="lb" style="height:86.2%"></span><span class="lc">E</span></li><li class="top" title="A: in 683 words"><span class="lb" style="height:70.1%"></span><span class="lc">A</span></li><li class="top" title="R: in 556 words"><span class="lb" style="height:57.0%"></span><span class="lc">R</span></li><li class="top" title="I: in 513 words"><span class="lb" style="height:52.6%"></span><span class="lc">I</span></li><li class="top" title="O: in 508 words"><span class="lb" style="height:52.1%"></span><span class="lc">O</span></li><li class="top" title="L: in 439 words"><span class="lb" style="height:45.0%"></span><span class="lc">L</span></li><li class="top" title="T: in 439 words"><span class="lb" style="height:45.0%"></span><span class="lc">T</span></li><li class="top" title="N: in 426 words"><span class="lb" style="height:43.7%"></span><span class="lc">N</span></li><li class="top" title="D: in 336 words"><span class="lb" style="height:34.5%"></span><span class="lc">D</span></li><li class="" title="C: in 305 words"><span class="lb" style="height:31.3%"></span><span class="lc">C</span></li><li class="" title="M: in 250 words"><span class="lb" style="height:25.6%"></span><span class="lc">M</span></li><li class="" title="P: in 247 words"><span class="lb" style="height:25.3%"></span><span class="lc">P</span></li><li class="" title="U: in 246 words"><span class="lb" style="height:25.2%"></span><span class="lc">U</span></li><li class="" title="H: in 207 words"><span class="lb" style="height:21.2%"></span><span class="lc">H</span></li><li class="" title="B: in 195 words"><span class="lb" style="height:20.0%"></span><span class="lc">B</span></li><li class="" title="Y: in 188 words"><span class="lb" style="height:19.3%"></span><span class="lc">Y</span></li><li class="" title="G: in 170 words"><span class="lb" style="height:17.4%"></span><span class="lc">G</span></li><li class="" title="K: in 169 words"><span class="lb" style="height:17.3%"></span><span class="lc">K</span></li><li class="" title="F: in 150 words"><span class="lb" style="height:15.4%"></span><span class="lc">F</span></li><li class="" title="W: in 137 words"><span class="lb" style="height:14.1%"></span><span class="lc">W</span></li><li class="" title="V: in 106 words"><span class="lb" style="height:10.9%"></span><span class="lc">V</span></li><li class="" title="X: in 45 words"><span class="lb" style="height:4.6%"></span><span class="lc">X</span></li><li class="" title="J: in 31 words"><span class="lb" style="height:3.2%"></span><span class="lc">J</span></li><li class="" title="Z: in 22 words"><span class="lb" style="height:2.3%"></span><span class="lc">Z</span></li><li class="" title="Q: in 7 words"><span class="lb" style="height:0.7%"></span><span class="lc">Q</span></li></ol>
+            <figure class="shot small-shot">
+              <picture><source srcset="img/best-start-dark.png" media="(prefers-color-scheme: dark)"><img src="img/best-start-light.png" alt="The Best start panel: DEALS + INTRO, RATES + COLIN, LEAST + MINOR" loading="lazy" class=""></picture>
+              <figcaption>In the app. Click either word to use it.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
 
-      <h2>Credits</h2>
-      <ul>
-        <li>Allowed words: <a href="https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93">Wordle's valid word list</a>, collected by dracos.</li>
-        <li>Word frequencies: Peter Norvig's <a href="https://norvig.com/ngrams/">word counts</a> from the Google Web Trillion Word Corpus.</li>
-        <li>Past answers: <a href="https://www.rockpapershotgun.com/wordle-past-answers">Rock Paper Shotgun</a>.</li>
-        <li>Wordle is made by Josh Wardle and owned by The New York Times. This is an unofficial fan project.</li>
-      </ul>
-      <p><a href="#">← Back to the solver</a></p>
+      <section class="step" id="how-4">
+        <h3><span class="num">4</span> Narrow it down: escape the lookalike trap</h3>
+        <div class="step-grid">
+          <div class="step-text">
+            <p>We know <b>_UDDY</b>, but 7 words still fit: BUDDY, RUDDY, CUDDY, FUDDY, PUDDY, NUDDY, WUDDY.
+              Guessing them one by one could take 7 more tries, and we only have 4 left.</p>
+            <p>Instead the solver takes the 20 most likely answers (here all 7) and tries
+              <em>every</em> allowed word as a guess, even ones that can't be the answer.
+              It picks the guess that splits them into the most, smallest groups.</p>
+            <p><b>BROWN</b> tests B, R, N and W at once. Whatever colours it shows, at most
+              <strong>3</strong> words are left, so we're sure to finish within six guesses.</p>
+            <p class="small">A ★ marks a suggestion that could also be the answer.
+              "solves it" means every possible answer would show different colours.</p>
+          </div>
+          <div class="visual">
+            <p class="visual-title">If you guess BROWN…</p>
+            <ul class="groups"><li><span class="mt-row" aria-label="BROWN"><span class="mt s-g">B</span><span class="mt s-b">R</span><span class="mt s-b">O</span><span class="mt s-b">W</span><span class="mt s-b">N</span></span><span class="arrow">→</span><span class="gw">BUDDY</span><span class="gn one">solved</span></li><li><span class="mt-row" aria-label="BROWN"><span class="mt s-b">B</span><span class="mt s-y">R</span><span class="mt s-b">O</span><span class="mt s-b">W</span><span class="mt s-b">N</span></span><span class="arrow">→</span><span class="gw">RUDDY</span><span class="gn one">solved</span></li><li><span class="mt-row" aria-label="BROWN"><span class="mt s-b">B</span><span class="mt s-b">R</span><span class="mt s-b">O</span><span class="mt s-b">W</span><span class="mt s-y">N</span></span><span class="arrow">→</span><span class="gw">NUDDY</span><span class="gn one">solved</span></li><li><span class="mt-row" aria-label="BROWN"><span class="mt s-b">B</span><span class="mt s-b">R</span><span class="mt s-b">O</span><span class="mt s-y">W</span><span class="mt s-b">N</span></span><span class="arrow">→</span><span class="gw">WUDDY</span><span class="gn one">solved</span></li><li><span class="mt-row" aria-label="BROWN"><span class="mt s-b">B</span><span class="mt s-b">R</span><span class="mt s-b">O</span><span class="mt s-b">W</span><span class="mt s-b">N</span></span><span class="arrow">→</span><span class="gw">CUDDY FUDDY PUDDY</span><span class="gn ">3 left</span></li></ul>
+            <figure class="shot small-shot">
+              <picture><source srcset="img/narrow-dark.png" media="(prefers-color-scheme: dark)"><img src="img/narrow-light.png" alt="The Narrow it down panel suggesting BROWN, CROWN, FRANC, FROWN and PRAWN" loading="lazy" class=""></picture>
+              <figcaption>In the app.</figcaption>
+            </figure>
+          </div>
+        </div>
+        <p class="cta-row"><button type="button" class="cta" data-example="DEALS MUDDY" data-answer="BUDDY">Load this example in the solver</button>
+          <span class="small">Replaces your current game. Undo and Reset still work.</span></p>
+      </section>
+
+      <section class="credits" aria-labelledby="credits-title">
+        <h3 id="credits-title">Credits</h3>
+        <ul class="credit-cards">
+          <li>
+            <span class="credit-what">Allowed words</span>
+            <a href="https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93">Wordle's valid word list</a>
+            <span class="credit-note">14,854 words, collected by dracos</span>
+          </li>
+          <li>
+            <span class="credit-what">Word frequencies</span>
+            <a href="https://norvig.com/ngrams/">Peter Norvig's word counts</a>
+            <span class="credit-note">From the Google Web Trillion Word Corpus</span>
+          </li>
+          <li>
+            <span class="credit-what">Past answers</span>
+            <a href="https://www.rockpapershotgun.com/wordle-past-answers">Rock Paper Shotgun</a>
+            <span class="credit-note">Every Wordle answer so far</span>
+          </li>
+        </ul>
+        <p class="small">Wordle is made by Josh Wardle and owned by The New York Times. This is an unofficial fan project.
+          Everything runs in your browser. <a href="https://github.com/JCA374/My-Wordle-Solver">Source on GitHub</a>.</p>
+        <p><a class="back" href="#">← Back to the solver</a></p>
+      </section>
     </div>
   </article>
 </body>
