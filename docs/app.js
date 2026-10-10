@@ -204,17 +204,19 @@ function formatFreq(word) {
 
 function renderResults(candidates, solved, onlyPastMatch) {
   $('count').textContent = candidates.length.toLocaleString('en');
-  $('count-label').textContent = candidates.length === 1 ? 'possible answer' : 'possible answers';
+  $('count-label').textContent = 'possible';
 
   // Explore words: any valid word that avoids every letter already tried.
   const used = new Set([...state.guesses.flatMap((g) => [...g.word]), ...state.input]);
   const explore = bestExploreWords(allWords, used, state.guesses.length ? 5 : 3);
   $('explore-title').textContent = state.guesses.length ? 'Explore new letters' : 'Best starting words';
-  $('explore-caption').textContent = state.guesses.length
-    ? 'Not likely the answer, but each tests five letters you haven\'t tried yet.'
-    : 'Five distinct, common letters with no overlap between words.';
+  const exploreSub = $('explore-sub');
+  exploreSub.textContent = state.guesses.length ? '5 untried letters each' : 'no shared letters';
+  exploreSub.title = state.guesses.length
+    ? 'Probably not the answer, but each tests five letters you haven\'t tried yet.'
+    : 'Five distinct, common letters, with no overlap between the words.';
   $('explore').replaceChildren(...explore.map(([w]) => wordItem(w, formatFreq(w))));
-  if (!explore.length) $('explore').replaceChildren(emptyItem('No words left with five untried letters.'));
+  $('explore-panel').hidden = solved || !explore.length;
 
   const likely = topByFrequency(candidates, freq, 20);
   renderSplitters(candidates, solved);
@@ -227,15 +229,20 @@ function renderResults(candidates, solved, onlyPastMatch) {
     el.className = 'letter';
     el.innerHTML = `<span class="l"></span><span class="n"></span>`;
     el.querySelector('.l').textContent = c;
-    el.querySelector('.n').textContent = n.toLocaleString('en');
+    el.querySelector('.n').textContent = Intl.NumberFormat('en', { notation: 'compact' }).format(n);
+    el.title = `${c} appears ${n.toLocaleString('en')} times in the remaining words`;
     return el;
   }));
 
-  if (solved) $('message').textContent = `Solved in ${state.guesses.length}! 🎉`;
-  else if (onlyPastMatch) $('message').textContent = 'Only past answers match. Untick "Exclude past Wordle answers".';
-  else if (candidates.length === 0) $('message').textContent = 'No words match. A tile colour may be off.';
-  else if (candidates.length === 1) $('message').textContent = `It must be ${candidates[0]}.`;
-  else $('message').textContent = '';
+  const hint = !solved && !state.guesses.length && candidates.length > 1;
+  let message = '';
+  if (solved) message = `Solved in ${state.guesses.length}! 🎉`;
+  else if (onlyPastMatch) message = 'Only past answers match. Untick "Hide past answers".';
+  else if (candidates.length === 0) message = 'No words match. A tile colour may be off.';
+  else if (candidates.length === 1) message = `It must be ${candidates[0]}.`;
+  else if (hint) message = 'Type a word · click tiles for colours · Enter';
+  $('message').textContent = message;
+  $('message').classList.toggle('is-hint', hint);
 }
 
 // Scoring every valid guess against the targets takes a moment, so cache it per set of clues.
@@ -250,10 +257,15 @@ function renderSplitters(candidates, solved) {
   const key = targets.join();
   if (splitCache.key !== key) splitCache = { key, value: bestSplitters(allWords, targets, 5) };
 
-  $('split-caption').textContent = `Ignores what you already know and picks guesses that best tell apart `
-    + `the ${targets.length} most likely answers. "4/6" means it sorts the 6 into 4 different colour results. ★ could also be the answer.`;
+  const n = targets.length;
+  const example = splitCache.value[0];
+  const sub = $('split-sub');
+  sub.textContent = `best splits of the top ${n}`;
+  sub.title = `Ignores what you already know and picks guesses that best tell apart the ${n} most likely answers.`
+    + (example ? ` "${example.groups}/${n}" means those ${n} words give ${example.groups} different colour results.` : '')
+    + ' ★ could also be the answer.';
   $('split').replaceChildren(...splitCache.value.map((s) => {
-    const detail = s.worst === 1 ? 'solves it' : `${s.groups}/${targets.length}`;
+    const detail = s.worst === 1 ? 'solves it' : `${s.groups}/${n}`;
     const li = wordItem(s.word, detail);
     if (s.isTarget) li.querySelector('.word').classList.add('could-win');
     return li;

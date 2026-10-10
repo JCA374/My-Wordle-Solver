@@ -12,6 +12,11 @@
 <body>
   <header class="topbar">
     <h1>Wordle Solver</h1>
+    <p class="count"><strong id="count">…</strong> <span id="count-label">possible</span></p>
+    <label class="toggle" title="Hide words that have already been Wordle answers">
+      <input id="exclude-past" type="checkbox">
+      <span>Hide past answers</span>
+    </label>
     <div class="actions">
       <button id="undo" type="button" title="Remove the last guess">Undo</button>
       <button id="reset" type="button" title="Start over">Reset</button>
@@ -20,52 +25,37 @@
 
   <main class="layout">
     <section class="play" aria-label="Your guesses">
-      <p class="hint">Type your guess, tap the tiles to match Wordle's colours, then press <kbd>Enter</kbd>.</p>
       <div id="board" class="board" role="grid"></div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
       <div id="keyboard" class="keyboard"></div>
+
+      <div class="letters-block">
+        <h2 class="mini-title">Common letters left</h2>
+        <div id="letters" class="letters"></div>
+      </div>
+
+      <footer class="footer">
+        Words: <a href="https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93">dracos</a> ·
+        <a href="https://github.com/JCA374/My-Wordle-Solver">Source</a>
+      </footer>
     </section>
 
     <section class="results" aria-label="Suggestions">
-      <div class="stat">
-        <span id="count" class="stat-value">…</span>
-        <span id="count-label" class="stat-label">possible answers</span>
-      </div>
-
-      <label class="toggle">
-        <input id="exclude-past" type="checkbox">
-        <span>Exclude past Wordle answers</span>
-      </label>
-
       <div class="panel" id="split-panel" hidden>
-        <h2>Narrow it down</h2>
-        <p id="split-caption" class="caption"></p>
+        <h2>Narrow it down <span id="split-sub" class="sub"></span></h2>
         <ol id="split" class="word-list"></ol>
       </div>
 
-      <div class="panel">
-        <h2 id="explore-title">Best starting words</h2>
-        <p id="explore-caption" class="caption">Five distinct, common letters with no overlap between words.</p>
+      <div class="panel" id="explore-panel">
+        <h2><span id="explore-title">Best starting words</span> <span id="explore-sub" class="sub"></span></h2>
         <ol id="explore" class="word-list"></ol>
       </div>
 
       <div class="panel" id="likely-panel">
-        <h2>Likely answers</h2>
-        <p class="caption">Remaining words, most common English words first.</p>
+        <h2>Likely answers <span class="sub" title="Words that fit every clue, most common English words first.">most common first</span></h2>
         <ol id="likely" class="word-list"></ol>
-      </div>
-
-      <div class="panel">
-        <h2>Most common letters</h2>
-        <p class="caption">Across the remaining words.</p>
-        <div id="letters" class="letters"></div>
       </div>
     </section>
   </main>
-
-  <footer class="footer">
-    Word list from <a href="https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93">dracos</a> ·
-    <a href="https://github.com/JCA374/My-Wordle-Solver">Source on GitHub</a>
-  </footer>
 </body>
 </html>

@@ -6,13 +6,15 @@ A small, fast Wordle helper that runs entirely in your browser.
 
 ## How to use
 
-1. Type the word you guessed in Wordle (physical or on-screen keyboard).
+1. Type the word you guessed in Wordle. The on-screen keyboard only appears on touch devices.
 2. Tap each tile until it matches Wordle's colours: gray → yellow → green.
    Number keys <kbd>1</kbd>–<kbd>5</kbd> also cycle the tiles.
 3. Press <kbd>Enter</kbd>. The board, keyboard and suggestions update.
 4. Tap any suggested word to use it as your next guess. **Undo** removes the last row and **Reset** starts over.
 
 Your game is saved in the browser, so a reload won't lose it.
+
+The layout is made to sit in half a laptop screen next to Wordle (it fits about 640×720 and up) with no page scrolling.
 
 ### What you get
 
@@ -21,7 +23,7 @@ Your game is saved in the browser, so a reload won't lose it.
 - **Likely answers**: the remaining words, most common English words first.
 - **Explore new letters**: words made of five letters you haven't tried yet, so you learn the most from one guess. Before your first guess this shows the best starting words.
 - **Most common letters** among the remaining words.
-- **Exclude past Wordle answers**: optionally hide words that have already been answers.
+- **Hide past answers**: optionally hide words that have already been answers.
 
 The filter uses exact Wordle scoring, so repeated letters are handled correctly. For example, if one E is yellow and the other is gray, the answer has exactly one E.
 
