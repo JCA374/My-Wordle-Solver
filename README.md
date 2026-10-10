@@ -21,9 +21,11 @@ The layout is made to sit in half a laptop screen next to Wordle (it fits about 
 - **Possible answers**: how many words still fit every clue.
 - **Narrow it down**: when many lookalikes remain (BUDDY, MUDDY, CUDDY, …), this ignores what you already know and suggests the guess that best tells apart the 20 most likely answers, even if it can't be the answer itself.
 - **Likely answers**: the remaining words, most common English words first.
-- **Explore new letters**: words made of five letters you haven't tried yet, so you learn the most from one guess. Before your first guess this shows the best starting words.
-- **Most common letters** among the remaining words.
-- **Hide past answers**: optionally hide words that have already been answers.
+- **Best start / Test new letters**: two common words with no shared letters that together test the 10 most useful letters (S E A R I O L T N D at the start, e.g. DEALS + INTRO). After a guess, it uses only letters you haven't tried yet.
+- **Common letters left** among the remaining words.
+- **Hide past**: optionally hide words that have already been answers.
+
+The **How it works** tab explains the logic in plain words and credits the word lists.
 
 The filter uses exact Wordle scoring, so repeated letters are handled correctly. For example, if one E is yellow and the other is gray, the answer has exactly one E.
 
@@ -63,6 +65,8 @@ GitHub Pages serves the `docs/` folder on `main` (Settings → Pages → *Deploy
 
 ## Credits
 
-Word list: https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93 ·
-Past answers: rockpapershotgun.com.
+- Allowed words: [Wordle's valid word list](https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93), collected by dracos.
+- Word frequencies: Peter Norvig's [word counts](https://norvig.com/ngrams/) from the Google Web Trillion Word Corpus.
+- Past answers: [Rock Paper Shotgun](https://www.rockpapershotgun.com/wordle-past-answers).
+
 Built as a hobby project with AI assistance.

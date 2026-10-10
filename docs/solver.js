@@ -140,3 +140,52 @@ export function patternId(guess, answer) {
   for (let i = 0; i < WORD_LENGTH; i++) letterCounts[answer[i]] = 0;   // cheaper than fill()
   return id;
 }
+
+/**
+ * Pairs of words that together test 10 different letters, avoiding `excludeLetters`.
+ * `weights` maps letter -> how useful it is to test (e.g. how many likely answers contain it).
+ * `words` should be most common first; among equal scores the more common words win.
+ * Returns [{ words: [first, second], letters }], best first, with no word or letter set repeated.
+ */
+export function bestPairs(words, weights, excludeLetters = new Set(), n = 3) {
+  const items = [];
+  words.forEach((word, rank) => {
+    let mask = 0, s = 0;
+    for (const c of word) {
+      const bit = 1 << (c.charCodeAt(0) - 65);
+      if (mask & bit || excludeLetters.has(c)) return;
+      mask |= bit;
+      s += weights[c] || 0;
+    }
+    items.push({ word, mask, rank, s });
+  });
+  items.sort((a, b) => b.s - a.s || a.rank - b.rank);
+
+  // Try the strongest distinct first words, each with its best non-overlapping partner.
+  const firsts = [];
+  const seen = new Set();
+  for (const it of items) {
+    if (seen.has(it.mask)) continue;   // an anagram of a word already tried
+    seen.add(it.mask);
+    firsts.push(it);
+    if (firsts.length >= 40) break;
+  }
+  const pairs = [];
+  for (const a of firsts) {
+    const b = items.find((x) => !(x.mask & a.mask));
+    if (b) pairs.push({ words: [a.word, b.word], mask: a.mask | b.mask, s: a.s + b.s, rank: a.rank + b.rank });
+  }
+  pairs.sort((x, y) => y.s - x.s || x.rank - y.rank);
+
+  const out = [];
+  const usedWords = new Set();
+  const usedMasks = new Set();
+  for (const p of pairs) {
+    if (usedMasks.has(p.mask) || p.words.some((w) => usedWords.has(w))) continue;
+    usedMasks.add(p.mask);
+    p.words.forEach((w) => usedWords.add(w));
+    out.push({ words: p.words, letters: p.words.join('') });
+    if (out.length >= n) break;
+  }
+  return out;
+}

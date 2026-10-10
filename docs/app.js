@@ -1,12 +1,14 @@
 import {
   WORD_LENGTH, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses,
-  bestSplitters,
+  bestSplitters, bestPairs,
 } from './solver.js';
 
 const STORAGE_KEY = 'wordle-solver-state-v1';
 const MIN_ROWS = 6;
 const NEXT = { b: 'y', y: 'g', g: 'b' };
 const SPLIT_TARGETS = 20;   // how many likely answers the splitter tries to tell apart
+const COMMON_WORDS = 5000;  // suggested start pairs come from the most common words
+const LETTER_BASE = 3000;   // letter counts for start pairs use this many most likely answers
 const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '+ZXCVBNM-'];
 
 const $ = (id) => document.getElementById(id);
@@ -175,8 +177,7 @@ function renderKeyboard() {
   }
 }
 
-function wordItem(word, detail) {
-  const li = document.createElement('li');
+function wordButton(word, detail = '') {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'word';
@@ -184,43 +185,54 @@ function wordItem(word, detail) {
   const w = document.createElement('span');
   w.className = 'w';
   w.textContent = word;
-  const d = document.createElement('span');
-  d.className = 'd';
-  d.textContent = detail;
-  btn.append(w, d);
+  btn.append(w);
+  if (detail) {
+    const d = document.createElement('span');
+    d.className = 'd';
+    d.textContent = detail;
+    btn.append(d);
+  }
   btn.addEventListener('click', () => {
     setInput(word);
     $('board').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
-  li.append(btn);
+  return btn;
+}
+
+function wordItem(word, detail) {
+  const li = document.createElement('li');
+  li.append(wordButton(word, detail));
   return li;
 }
 
-function formatFreq(word) {
-  const f = freq.get(word) || 0;
-  if (!f) return 'rare';
-  return Intl.NumberFormat('en', { notation: 'compact' }).format(f);
+function pairItem({ words: [a, b] }) {
+  const li = document.createElement('li');
+  li.className = 'pair';
+  const plus = document.createElement('span');
+  plus.className = 'plus';
+  plus.textContent = '+';
+  li.append(wordButton(a), plus, wordButton(b));
+  return li;
+}
+
+/** How many of the likely, not-yet-used answers contain each letter. */
+function letterWeights(candidates) {
+  const likely = candidates.slice(0, LETTER_BASE);   // candidates are most common first
+  const fresh = likely.filter((w) => !pastAnswers.has(w));
+  const weights = {};
+  for (const w of fresh.length ? fresh : likely) for (const c of new Set(w)) weights[c] = (weights[c] || 0) + 1;
+  return weights;
 }
 
 function renderResults(candidates, solved, onlyPastMatch) {
   $('count').textContent = candidates.length.toLocaleString('en');
   $('count-label').textContent = 'possible';
 
-  // Explore words: any valid word that avoids every letter already tried.
-  const used = new Set([...state.guesses.flatMap((g) => [...g.word]), ...state.input]);
-  const explore = bestExploreWords(allWords, used, state.guesses.length ? 5 : 3);
-  $('explore-title').textContent = state.guesses.length ? 'Explore new letters' : 'Best starting words';
-  const exploreSub = $('explore-sub');
-  exploreSub.textContent = state.guesses.length ? '5 untried letters each' : 'no shared letters';
-  exploreSub.title = state.guesses.length
-    ? 'Probably not the answer, but each tests five letters you haven\'t tried yet.'
-    : 'Five distinct, common letters, with no overlap between the words.';
-  $('explore').replaceChildren(...explore.map(([w]) => wordItem(w, formatFreq(w))));
-  $('explore-panel').hidden = solved || !explore.length;
+  renderExplore(candidates, solved);
 
   const likely = topByFrequency(candidates, freq, 20);
   renderSplitters(candidates, solved);
-  $('likely').replaceChildren(...likely.map((w) => wordItem(w, formatFreq(w))));
+  $('likely').replaceChildren(...likely.map((w) => wordItem(w)));
   if (!likely.length) $('likely').replaceChildren(emptyItem('No words match.'));
 
   const letters = letterFrequency(candidates).slice(0, 10);
@@ -237,12 +249,41 @@ function renderResults(candidates, solved, onlyPastMatch) {
   const hint = !solved && !state.guesses.length && candidates.length > 1;
   let message = '';
   if (solved) message = `Solved in ${state.guesses.length}! 🎉`;
-  else if (onlyPastMatch) message = 'Only past answers match. Untick "Hide past answers".';
+  else if (onlyPastMatch) message = 'Only past answers match. Untick "Hide past".';
   else if (candidates.length === 0) message = 'No words match. A tile colour may be off.';
   else if (candidates.length === 1) message = `It must be ${candidates[0]}.`;
   else if (hint) message = 'Type a word · click tiles for colours · Enter';
   $('message').textContent = message;
   $('message').classList.toggle('is-hint', hint);
+}
+
+// Two words that test ten untried letters; falls back to single words when no pair fits.
+function renderExplore(candidates, solved) {
+  const tried = new Set(state.guesses.flatMap((g) => [...g.word]));
+  const first = !state.guesses.length;
+  const weights = letterWeights(candidates);
+  let pairs = bestPairs(allWords.slice(0, COMMON_WORDS), weights, tried, 3);
+  if (!pairs.length) pairs = bestPairs(allWords, weights, tried, 3);
+
+  const list = $('explore');
+  const sub = $('explore-sub');
+  list.classList.toggle('pair-list', pairs.length > 0);
+  if (pairs.length) {
+    $('explore-title').textContent = first ? 'Best start' : 'Test new letters';
+    sub.textContent = first ? '2 words, 10 letters' : '2 words, 10 untried letters';
+    sub.title = (first
+      ? 'Two common words with no shared letters that together test the 10 letters found in the most likely answers.'
+      : 'Probably not the answer, but together they test 10 letters you haven\'t tried, picked by how many possible answers contain them.')
+      + ' Click a word to use it.';
+    list.replaceChildren(...pairs.map(pairItem));
+  } else {
+    const words = bestExploreWords(allWords, tried, 5);
+    $('explore-title').textContent = 'Test new letters';
+    sub.textContent = '5 untried letters each';
+    sub.title = 'Probably not the answer, but each tests five letters you haven\'t tried yet.';
+    list.replaceChildren(...words.map(([w]) => wordItem(w)));
+  }
+  $('explore-panel').hidden = solved || !list.children.length;
 }
 
 // Scoring every valid guess against the targets takes a moment, so cache it per set of clues.
@@ -299,8 +340,21 @@ function update() {
 
 // ---------------------------------------------------------------- startup
 
+function showTab() {
+  const how = location.hash === '#how';
+  $('how').hidden = !how;
+  document.querySelector('.layout').hidden = how;
+  document.body.classList.toggle('on-how', how);
+  for (const [id, on] of [['tab-solver', !how], ['tab-how', how]]) {
+    if (on) $(id).setAttribute('aria-current', 'page');
+    else $(id).removeAttribute('aria-current');
+  }
+  if (how) $('how').scrollTop = 0;
+}
+
 function onKeyDown(e) {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!$('how').hidden) return;
   if (e.target.closest('input')) return;
   if (e.key === 'Enter') {
     // Let Enter/Space activate a focused button (tile, suggestion) normally.
@@ -318,6 +372,8 @@ function onKeyDown(e) {
 }
 
 async function init() {
+  showTab();
+  window.addEventListener('hashchange', showTab);
   load();
   try {
     const [words, past] = await Promise.all([
