@@ -1,3 +1,15 @@
-.env
-OldWords.txt
-temp_word_freqentemp_word_frequency_dict.txt
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Notebooks
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
