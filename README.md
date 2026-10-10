@@ -1,76 +1,65 @@
-# My-Wordle-Solver 🎯
+# My Wordle Solver 🎯
 
-An intelligent Wordle puzzle solver with a modern web interface. This tool helps you solve Wordle puzzles by suggesting optimal words based on your feedback.
+A small, fast Wordle helper that runs entirely in your browser.
 
-## Features
+**▶ Live: https://jca374.github.io/My-Wordle-Solver/**
 
-- 🎨 **Modern Streamlit UI** - Clean, intuitive interface with color-coded feedback
-- 🧠 **Smart Recommendations** - Uses letter frequency analysis and scoring algorithms
-- 📊 **Real-time Statistics** - See how many possible solutions remain
-- 🌟 **Best Starting Words** - Automatically suggests optimal starting words
-- 🔄 **Exclude Past Answers** - Option to filter out previously used Wordle words
-- ⚙️ **Customizable Settings** - Adjust repeat letter penalties
+## How to use
 
-## Quick Start
+1. Type the word you guessed in Wordle (physical or on-screen keyboard).
+2. Tap each tile until it matches Wordle's colours: gray → yellow → green.
+   Number keys <kbd>1</kbd>–<kbd>5</kbd> also cycle the tiles.
+3. Press <kbd>Enter</kbd>. The board, keyboard and suggestions update.
+4. Tap any suggested word to use it as your next guess. **Undo** removes the last row and **Reset** starts over.
 
-### Installation
+Your game is saved in the browser, so a reload won't lose it.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/JCA374/My-Wordle-Solver.git
-   cd My-Wordle-Solver
-   ```
+### What you get
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+- **Possible answers**: how many words still fit every clue.
+- **Likely answers**: the remaining words, most common English words first.
+- **Explore new letters**: words made of five letters you haven't tried yet, so you learn the most from one guess. Before your first guess this shows the best starting words.
+- **Most common letters** among the remaining words.
+- **Exclude past Wordle answers**: optionally hide words that have already been answers.
 
-### Running the App
+The filter uses exact Wordle scoring, so repeated letters are handled correctly. For example, if one E is yellow and the other is gray, the answer has exactly one E.
 
-**Launch the Streamlit app:**
-```bash
-streamlit run app.py
+## Project layout
+
+```
+docs/                 the website (served by GitHub Pages)
+  index.html, style.css, app.js
+  solver.js           pure solver logic (scoring, filtering, ranking)
+  data/*.json         generated word data
+data/                 raw sources: word list, word frequencies, past answers
+scripts/build_data.py turns data/ into docs/data/*.json
+tests/                Node tests for solver.js
 ```
 
-The app will automatically open in your browser at `http://localhost:8501`
+## Development
 
-## How to Use
+No build step and no dependencies.
 
-1. **Enter your guess** - Type a 5-letter word (default: "AROSE")
-2. **Mark each letter:**
-   - 🟩 **Correct** - Letter is in the right position
-   - 🟨 **Wrong Position** - Letter is in the word but wrong position
-   - ⬛ **Not in Word** - Letter is not in the word at all
-3. **View recommendations** - See the top 20 suggested words with scores
-4. **Repeat** - Enter your next guess based on the recommendations
+```bash
+# Run locally, then open http://localhost:8000
+python3 -m http.server -d docs
 
-## Project Structure
+# Run the tests (Node 20+)
+node --test
 
-- `app.py` - Main Streamlit application
-- `Wordel Build 4.ipynb` - Original Jupyter notebook (Tkinter version)
-- `five_letter_words.txt` - Word list (~12,000 words)
-- `five_letter_frequency_list.txt` - Letter frequency data
-- `OldWords.txt` - Previously used Wordle answers
-- `requirements.txt` - Python dependencies
+# Regenerate docs/data/*.json after editing data/
+python3 scripts/build_data.py
 
-## Algorithm
+# Also fetch the latest past answers from rockpapershotgun.com
+python3 scripts/build_data.py --refresh-past-answers
+```
 
-The solver uses:
-- **Letter frequency analysis** - Prioritizes common letters
-- **Position-based filtering** - Applies locked/excluded position constraints
-- **Scoring system** - Ranks words by likelihood of success
-- **Repeat letter penalty** - Adjustable penalty for words with repeated letters
+## Deploying
 
-## Technologies
-
-- **Python** - Core language
-- **Streamlit** - Web interface
-- **BeautifulSoup** - Web scraping for past answers
-- **Requests** - HTTP requests for word lists
+GitHub Pages serves the `docs/` folder on `main` (Settings → Pages → *Deploy from a branch* → `main` / `/docs`). Pushing to `main` publishes the site.
 
 ## Credits
 
-Word list source: https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93
-
+Word list: https://gist.github.com/dracos/dd0668f281e685bad51479e5acaadb93 ·
+Past answers: rockpapershotgun.com.
 Built as a hobby project with AI assistance.
