@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  score, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses, bestSplitters, bestPairs,
+  score, filterCandidates, topByFrequency, letterFrequency, letterStatuses, bestSplitters, bestPairs,
 } from '../docs/solver.js';
 
 test('score: basic patterns', () => {
@@ -53,22 +53,6 @@ test('topByFrequency sorts by frequency', () => {
 
 test('letterFrequency counts letters', () => {
   assert.deepEqual(letterFrequency(['ABA', 'BB']).slice(0, 2), [['B', 3], ['A', 2]]);
-});
-
-test('bestExploreWords: unique letters, no overlap, respects exclusions', () => {
-  const words = ['CRANE', 'SLOTH', 'CRATE', 'DUMPY', 'EERIE', 'BLINK', 'FIGHT'];
-  const exclude = new Set(['A']);
-  const picked = bestExploreWords(words, exclude, 5).map(([w]) => w);
-  const seen = new Set();
-  for (const w of picked) {
-    assert.equal(new Set(w).size, 5);
-    for (const c of w) {
-      assert.ok(!exclude.has(c), `${w} contains excluded ${c}`);
-      assert.ok(!seen.has(c), `${w} overlaps with an earlier pick`);
-      seen.add(c);
-    }
-  }
-  assert.ok(picked.length > 0);
 });
 
 test('letterStatuses keeps the best status per letter', () => {

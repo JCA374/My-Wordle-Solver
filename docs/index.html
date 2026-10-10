@@ -30,6 +30,7 @@
   <main class="layout">
     <section class="play" aria-label="Your guesses">
       <div id="board" class="board" role="grid"></div>
+      <button id="enter" class="enter" type="button">Enter</button>
       <p id="message" class="message" role="status" aria-live="polite"></p>
       <div id="keyboard" class="keyboard"></div>
 
@@ -45,14 +46,14 @@
     </section>
 
     <section class="results" aria-label="Suggestions">
-      <div class="panel" id="split-panel" hidden>
-        <h2>Narrow it down <span id="split-sub" class="sub"></span></h2>
-        <ol id="split" class="word-list"></ol>
+      <div class="panel" id="start-panel">
+        <h2>Best start <span class="sub" title="Two common words with no shared letters that together test the 10 most useful letters. Guess one now; the other is suggested next.">pick a pair, guess one word</span></h2>
+        <ol id="start" class="word-list pair-list"></ol>
       </div>
 
-      <div class="panel" id="explore-panel">
-        <h2><span id="explore-title">Best start</span> <span id="explore-sub" class="sub"></span></h2>
-        <ol id="explore" class="word-list"></ol>
+      <div class="panel" id="next-panel" hidden>
+        <h2>Test new letters <span class="sub" title="Guesses that best tell apart the 20 most likely answers. They are often not the answer themselves, but rule out the most words. ★ could also be the answer.">rules out the most words</span></h2>
+        <ol id="next" class="word-list"></ol>
       </div>
 
       <div class="panel" id="likely-panel">
@@ -65,35 +66,26 @@
   <article id="how" class="how" hidden>
     <div class="how-inner">
       <h2>How it works</h2>
-      <p>Everything runs in your browser. The solver uses three ideas.</p>
 
-      <h3>1. Keep only the words that fit</h3>
-      <p>For every guess you enter, the solver asks each word in the list:
-        <em>"If this were the answer, would my guess have shown exactly these colours?"</em>
-        Only words that answer yes for every guess are kept. That is the <strong>possible</strong> count.</p>
-      <p>This uses Wordle's own colouring rules, so double letters work: guess <b>SPEED</b> with one
-        yellow E and one gray E and the answer has exactly one E.</p>
+      <h3>1. Best start</h3>
+      <p>Two common words with no shared letters, like <b>DEALS</b> + <b>INTRO</b>. Together they test
+        the 10 letters most common in Wordle answers. Guess one, and the solver suggests the other next.</p>
 
-      <h3>2. Put the common words first</h3>
-      <p>Wordle answers are everyday words, but the list of allowed guesses has almost 15,000 words,
-        most of them obscure. So <strong>Likely answers</strong> sorts the possible words by how often
-        they appear in English text. The top of the list is usually the answer.</p>
-      <p><strong>Hide past</strong> removes words that have already been the answer.</p>
+      <h3>2. Keep only the words that fit</h3>
+      <p>After each guess, a word stays possible only if guessing it would have shown exactly your colours.
+        Double letters are handled the way Wordle does it.</p>
 
-      <h3>3. Pick guesses that teach you the most</h3>
-      <p><strong>Best start.</strong> Count how many common words (minus past answers) contain each letter.
-        The ten most frequent letters are roughly S E A R I O L T N D. The solver looks for two
-        real words with no letter in common that cover as many of those letters as possible, such as
-        <b>DEALS</b> + <b>INTRO</b>. Two guesses then test ten different letters.</p>
-      <p>After your first guess it does the same with letters you <em>haven't</em> tried yet, counted
-        over the words that are still possible.</p>
-      <p><strong>Narrow it down.</strong> Sometimes you know four letters but many words still fit:
-        BUDDY, MUDDY, CUDDY, … Guessing them one by one can lose the game. Instead the solver takes
-        the 20 most likely answers and tries every allowed word as a guess, even ones that can't be
-        the answer. Each guess splits those 20 words into groups by the colours they would show.
-        The best guess leaves many small groups, so whatever colours you get, few words remain.
-        A ★ means the guess could also be the answer.</p>
-      <p><strong>Common letters left</strong> shows which letters appear most in the words still possible.</p>
+      <h3>3. Likely answers</h3>
+      <p>The words that still fit, most common first. Wordle answers are everyday words, so the top of the list
+        is usually right. <strong>Hide past</strong> drops words that have already been an answer.</p>
+
+      <h3>4. Test new letters</h3>
+      <p>When many lookalikes are left (BUDDY, MUDDY, CUDDY…), guessing them one by one can lose the game.
+        These guesses rule out the most likely answers in one go, even if they can't be the answer themselves.
+        ★ means it could also be the answer.</p>
+
+      <h3>Made a mistake?</h3>
+      <p>Click any tile, even in a row you already entered, to change its colour.</p>
 
       <h2>Credits</h2>
       <ul>
