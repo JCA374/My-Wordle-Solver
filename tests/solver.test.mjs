@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  score, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses,
+  score, filterCandidates, topByFrequency, letterFrequency, bestExploreWords, letterStatuses, bestSplitters,
 } from '../docs/solver.js';
 
 test('score: basic patterns', () => {
@@ -78,4 +78,33 @@ test('letterStatuses keeps the best status per letter', () => {
   ]);
   assert.equal(s.A, 'g');
   assert.equal(s.R, 'b');
+});
+
+test('bestSplitters finds a guess that separates -UDDY / -UPPY style lookalikes', () => {
+  const targets = ['BUDDY', 'MUDDY', 'CUDDY', 'PUPPY', 'GUPPY', 'DUDDY'];
+  const guessWords = ['BUDDY', 'CHAMP', 'BMGPC', 'ZZZZZ', ...targets];
+  const [best] = bestSplitters(guessWords, targets, 1);
+  // BMGPC tests the first letter of every target at once, so each lands in its own group.
+  assert.equal(best.word, 'BMGPC');
+  assert.equal(best.groups, targets.length);
+  assert.equal(best.worst, 1);
+});
+
+test('bestSplitters prefers a possible answer when splits tie', () => {
+  const targets = ['AAAAB', 'AAAAC'];
+  const [best] = bestSplitters(['ZZZZB', 'AAAAB'], targets, 1);
+  assert.equal(best.word, 'AAAAB');
+  assert.equal(best.isTarget, true);
+});
+
+test('patternId agrees with score on many word pairs', async () => {
+  const { patternId } = await import('../docs/solver.js');
+  const { readFileSync } = await import('node:fs');
+  const words = JSON.parse(readFileSync(new URL('../docs/data/words.json', import.meta.url))).map(([w]) => w);
+  const sample = words.filter((_, i) => i % 97 === 0);
+  const codes = (w) => Uint8Array.from(w, (c) => c.charCodeAt(0) - 65);
+  const toId = (p) => [...p].reduceRight((id, c) => id * 3 + { b: 0, y: 1, g: 2 }[c], 0);
+  for (const g of sample) for (const a of sample) {
+    assert.equal(patternId(codes(g), codes(a)), toId(score(g, a)), `${g} vs ${a}`);
+  }
 });

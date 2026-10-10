@@ -17,6 +17,7 @@ Your game is saved in the browser, so a reload won't lose it.
 ### What you get
 
 - **Possible answers**: how many words still fit every clue.
+- **Narrow it down**: when many lookalikes remain (BUDDY, MUDDY, CUDDY, …), this ignores what you already know and suggests the guess that best tells apart the 20 most likely answers, even if it can't be the answer itself.
 - **Likely answers**: the remaining words, most common English words first.
 - **Explore new letters**: words made of five letters you haven't tried yet, so you learn the most from one guess. Before your first guess this shows the best starting words.
 - **Most common letters** among the remaining words.
